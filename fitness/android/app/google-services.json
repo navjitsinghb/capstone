@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "190740291785",
+    "project_id": "fitness-b63cc",
+    "storage_bucket": "fitness-b63cc.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:190740291785:android:70870cb426009a75b52d18",
+        "android_client_info": {
+          "package_name": "com.example.fitness"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDp7K58bcUbgRwAmXD5Mc2cvgBq5unUYD4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
