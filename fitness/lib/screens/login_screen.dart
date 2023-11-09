@@ -41,13 +41,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
     User? user = FirebaseAuth.instance.currentUser;
 
-    if (user != null) {
+    if (user != null) { // if user is not null, then the user is already logged in
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (context) =>
           //  HealthApp(
             // user: user,
-          HomeScreen(
+          HealthDataScreen(
             user: user,
           ),
         ),
@@ -88,7 +88,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const Padding(
                       padding: EdgeInsets.only(bottom: 30.0,top: 12),
                       child: Text(
-                        'Welcome Peoplez',
+                        'Welcome People',
                         style: TextStyle(
                           color: Colors.black,
                           fontSize: 40
@@ -179,14 +179,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                         _isProcessing = false;
                                       });
 
-                                      if (user != null) {
+                                      if (user != null) { // if user is not null, then the user is already logged in
                                         Navigator.of(context)
                                             .pushReplacement(
                                           MaterialPageRoute(
                                             builder: (context) =>
-                                                // HomeScreen(user: user),
-                                                HealthApp(
-                                                  user: user,
+                                                HealthDataScreen(user: user,
+                                                // HealthApp(
+                                                //   user: user,
                                                 ),
                                           ),
                                         );

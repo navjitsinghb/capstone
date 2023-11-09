@@ -7,7 +7,7 @@ import 'package:fitness/screens/home.dart';
 import 'package:flutter/material.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:fitness/screens/name.dart';
+// import 'package:fitness/screens/name.dart';
 import 'package:fitness/helpers/firebase_auth.dart';
 import 'package:fitness/helpers/validator.dart';
 
@@ -165,7 +165,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                       MaterialPageRoute(
                                         builder: (context) =>
                                             // HomeScreen(user: user),
-                                            HealthApp(user: user),
+                                            HealthDataScreen(user: user ),
                                       ),
                                       ModalRoute.withName('/'),
                                     );

@@ -39,6 +39,7 @@ dependencies:
   firebase_auth: ^4.10.0
   health: ^8.0.0
   permission_handler: ^11.0.1
+  font_awesome_flutter: ^10.6.0
   
 
 
@@ -73,6 +74,11 @@ flutter:
 
   assets:
     - assets/images/bolt.png
+    - assets/images/health.jpeg
+    - assets/images/kcal.jpeg
+    - assets/images/step.jpeg
+    - assets/images/blood-pressure.jpeg
+
 
 
 
