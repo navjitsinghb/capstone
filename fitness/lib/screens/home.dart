@@ -10,6 +10,10 @@ import 'package:flutter/material.dart';
 import 'package:health/health.dart';
 //icons
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+//firestone
+import 'package:cloud_firestore/cloud_firestore.dart';
+//friends page
+import 'package:fitness/screens/friends.dart';
 
 
 // class HealthApp extends StatelessWidget {
@@ -34,7 +38,7 @@ class HealthDataScreen extends StatefulWidget {
 
   HealthDataScreen({required this.user});
   @override
-  _HealthDataScreenState createState() => _HealthDataScreenState();
+  _HealthDataScreenState createState() => _HealthDataScreenState(user.uid);
 }
 
 class _HealthDataScreenState extends State<HealthDataScreen> {
@@ -45,6 +49,21 @@ class _HealthDataScreenState extends State<HealthDataScreen> {
 
   String? bloodPreSys;
   String? bloodPreDia;
+
+  final String? userId;
+  
+  _HealthDataScreenState(this.userId);
+  final TextEditingController _searchController = TextEditingController();
+
+  int selectedPage = 0;
+  final List<Widget> _pages = [
+    HealthDataScreen(user: FirebaseAuth.instance.currentUser!),
+    FriendsScreen(),
+    // SettingsScreen(),
+
+  ];
+
+
 
   List<HealthDataPoint> healthData = [];
 
@@ -69,7 +88,7 @@ class _HealthDataScreenState extends State<HealthDataScreen> {
 
     // get data within the last 24 hours
     final now = DateTime.now();
-    final yesterday = now.subtract(const Duration(days: 1));
+    final yesterday = now.subtract(const Duration(days: 2));
 
     // requesting access to the data types before reading them
     bool requested = await health.requestAuthorization(types);
@@ -114,11 +133,53 @@ class _HealthDataScreenState extends State<HealthDataScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("My Health Data"),
+        //title: display username of user and healthdata
+        title: Text("Welcome ${widget.user.displayName}"),
+        actions: [
+          //three dot overflow menu
+          PopupMenuButton(
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                child: TextButton(
+                  onPressed: () async {
+                    _logoutButton();
+                    // await FirebaseAuth.instance.signOut();
+                    // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginScreen()));
+                  },
+                  child: const Text("Logout"),
+                ),
+                //add friend button
+              ),
+              PopupMenuItem(
+                child: TextButton(
+                  onPressed: () async { //search for username with a form
+                    _showAddFriendForm(context);
+
+
+                  },
+                  child: const Text("Add Friend"),
+                ),
+              ),
+              //notification button
+              PopupMenuItem(
+                child: TextButton(
+                  onPressed: () async {
+
+                  },
+                  child: const Text("Notifications"),
+                ),
+              ),
+            ],
+          ),
+
+        ],
       ),
-      body: SingleChildScrollView(
+      body: 
+
+      SingleChildScrollView(
         padding: const EdgeInsets.all(20),
-        child: Column(
+        child: 
+        Column(
           children: [
             Row(
               children: [
@@ -126,7 +187,7 @@ class _HealthDataScreenState extends State<HealthDataScreen> {
                     child: healthCard(
                         title: "Heart rate",
                         image: "assets/images/health.jpeg",
-                        data: heartRate != "null" ? "$heartRate bpm" : "",
+                        data: heartRate != "null" ? "$heartRate bpm" : "heart rate",
                         color: const Color(0xFF8d7ffa))),
                 const SizedBox(
                   width: 10,
@@ -134,7 +195,7 @@ class _HealthDataScreenState extends State<HealthDataScreen> {
                 Expanded(
                     child: healthCard(
                         title: "Blood pressure",
-                        data: bp ?? "",
+                        data: bp ?? "Beats per minute", //what does line do?
                         image: "assets/images/blood-pressure.jpeg",
                         color: const Color(0xFF4fd164))),
               ],
@@ -145,33 +206,153 @@ class _HealthDataScreenState extends State<HealthDataScreen> {
                     child: healthCard(
                         title: "Step count",
                         image: "assets/images/step.jpeg",
-                        data: steps ?? "",
+                        data: steps ?? "null",
                         color: const Color(0xFF2086fd))),
                 const SizedBox(
                   width: 10,
                 ),
                 Expanded(
                     child: healthCard(
-                        title: "Energy burned",
+                        title: "Calories burned",
                         image: "assets/images/kcal.jpeg",
                         data: activeEnergy != "null" ? "$activeEnergy cal" : "",
                         color: const Color(0xFFf77e7e))
                         ),
-                        _logoutButton(),
               ],
 
             )
           ],
         ),
       ),
+      //bottom navigation bar
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: selectedPage,
+        onTap: (index) {
+          setState(() {
+            selectedPage = index;
+          });
+        },
+        items: [
+          //home page, friends page, settings page, competing page
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: "Home",
+            backgroundColor: Colors.black,
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.people),
+            label: "Friends",
+            backgroundColor: Colors.amber,
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.run_circle_outlined),
+            label: "Competing",
+            backgroundColor: Colors.redAccent,
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: "Settings",
+            backgroundColor: Colors.black,
+          ),
+
+        ],
+      ),
     );
   }
-  Widget _logoutButton() {
-    return IconButton(icon: FaIcon(FontAwesomeIcons.arrowRightArrowLeft), onPressed: () async {
+  Future<void> _logoutButton() async {
       await FirebaseAuth.instance.signOut();
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginScreen()));
+    }
+
+    void _showAddFriendForm(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Search for Friends'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: _searchController,
+                decoration: InputDecoration(labelText: 'Enter username'),
+              ),
+              SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: () {
+                  _searchForUser(context, _searchController.text);
+                },
+                child: Text('Search'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _searchForUser(BuildContext context, String username) {
+    // Perform a Firestore query to search for the user
+    FirebaseFirestore.instance
+        .collection('users')
+        .where('username', isEqualTo: username)
+        .get()
+        .then((QuerySnapshot querySnapshot) {
+      if (querySnapshot.docs.isNotEmpty) {
+        // User found, you can add friend logic here
+        Navigator.pop(context); // Close the search form
+        _showUserFoundDialog(context, querySnapshot.docs.first);
+      } else {
+        // User not found
+        _showUserNotFoundDialog(context);
+      }
     });
-}
+  }
+
+  void _showUserFoundDialog(BuildContext context, DocumentSnapshot userSnapshot) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('User Found'),
+          content: Text('Username: ${userSnapshot['username']}'),
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                // Add friend logic here
+                Navigator.pop(context); // Close the dialog
+              },
+              child: Text('Add Friend'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showUserNotFoundDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('User Not Found'),
+          content: Text('Sorry, the user was not found.'),
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context); // Close the dialog
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+//adding friends with firestone 
+//how to add friends with firestone: 
+
 
 Widget healthCard(
     {String title = "",
@@ -199,4 +380,45 @@ Widget healthCard(
 
 Textbutton({required Future Function() onPressed, required Text child}) {
 }
+
+//adding friends with firestone
+//add user data from firebase auth to firestone
+void addDataToFirestone(String userId, String username){
+  FirebaseFirestore.instance.collection('users').doc(userId).set({
+    'username': username,
+    'friends': [], // Initialize an empty array for friends
+    'friendRequests': [], // Initialize an empty array for friend requests
+  });
 }
+
+//read data from firestone
+void readDataFromFirestone(){
+  CollectionReference users = FirebaseFirestore.instance.collection('users');
+  users.get().then((QuerySnapshot querySnapshot) {
+    querySnapshot.docs.forEach((doc) {
+      print(doc["name"]);
+      print(doc["email"]);
+    });
+  });
+}
+//send friends request using firestone
+void sendFriendRequest(String senderId, String receiverId) {
+  FirebaseFirestore.instance.collection('users').doc(receiverId).update({
+    'friendRequests': FieldValue.arrayUnion([senderId]),
+  });
+}//what does this function do exactly? 
+//accept friend request using firestone
+void acceptFriendRequest(String senderId, String receiverId) {
+  FirebaseFirestore.instance.collection('users').doc(receiverId).update({
+    'friendRequests': FieldValue.arrayRemove([senderId]),
+    'friends': FieldValue.arrayUnion([senderId]),
+  });
+  FirebaseFirestore.instance.collection('users').doc(senderId).update({
+    'friends': FieldValue.arrayUnion([receiverId]),
+  });
+}
+
+
+
+
+}//end of class
