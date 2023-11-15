@@ -56,6 +56,12 @@ class _HealthDataScreenState extends State<HealthDataScreen> {
   final TextEditingController _searchController = TextEditingController();
 
   int selectedPage = 0;
+
+_onTap() {
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (BuildContext context) => _pages[selectedPage])); // this has changed
+
+  }
   final List<Widget> _pages = [
     HealthDataScreen(user: FirebaseAuth.instance.currentUser!),
     FriendsScreen(),
@@ -174,8 +180,7 @@ class _HealthDataScreenState extends State<HealthDataScreen> {
 
         ],
       ),
-      body: 
-
+      body:
       SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: 
@@ -227,12 +232,7 @@ class _HealthDataScreenState extends State<HealthDataScreen> {
       //bottom navigation bar
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: selectedPage,
-        onTap: (index) {
-          setState(() {
-            selectedPage = index;
-          });
-        },
-        items: [
+        items: const [
           //home page, friends page, settings page, competing page
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -254,8 +254,14 @@ class _HealthDataScreenState extends State<HealthDataScreen> {
             label: "Settings",
             backgroundColor: Colors.black,
           ),
-
         ],
+        onTap: (index) {
+          setState(() {
+            selectedPage = index;
+          });
+            _onTap();
+        },
+
       ),
     );
   }
@@ -269,20 +275,20 @@ class _HealthDataScreenState extends State<HealthDataScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Search for Friends'),
+          title: const Text('Search for Friends'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: _searchController,
-                decoration: InputDecoration(labelText: 'Enter username'),
+                decoration: const InputDecoration(labelText: 'Enter username'),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               ElevatedButton(
                 onPressed: () {
                   _searchForUser(context, _searchController.text);
                 },
-                child: Text('Search'),
+                child: const Text('Search'),
               ),
             ],
           ),
@@ -314,7 +320,7 @@ class _HealthDataScreenState extends State<HealthDataScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('User Found'),
+          title: const Text('User Found'),
           content: Text('Username: ${userSnapshot['username']}'),
           actions: [
             ElevatedButton(
@@ -322,7 +328,7 @@ class _HealthDataScreenState extends State<HealthDataScreen> {
                 // Add friend logic here
                 Navigator.pop(context); // Close the dialog
               },
-              child: Text('Add Friend'),
+              child: const Text('Add Friend'),
             ),
           ],
         );
@@ -335,14 +341,14 @@ class _HealthDataScreenState extends State<HealthDataScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('User Not Found'),
-          content: Text('Sorry, the user was not found.'),
+          title: const Text('User Not Found'),
+          content: const Text('Sorry, the user was not found.'),
           actions: [
             ElevatedButton(
               onPressed: () {
                 Navigator.pop(context); // Close the dialog
               },
-              child: Text('OK'),
+              child: const Text('OK'),
             ),
           ],
         );
