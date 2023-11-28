@@ -288,25 +288,29 @@ _onTap() {
 
 
 void _searchForUser(BuildContext context, String name) async {
-    await FirebaseFirestore.instance
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
         .collection('users')
         .where('name', isEqualTo: name)
         .get();
-      if (name == name) {
-        Future<void> users = FirebaseFirestore.instance.collection('users').doc(userId).update({
-          'friends': FieldValue.arrayUnion([name])
-        });
-        _showUserFoundDialog(context, name);
-      } else {
+      //check if name in textbox is in database
+    if (querySnapshot.docs.isNotEmpty) {
+      //if current signed in user tries to add themselves, show user not found dialog
+      if (name == FirebaseAuth.instance.currentUser!.displayName) {
         _showUserNotFoundDialog(context);
+        return;
       }
+      //if name is in database, show dialog
+      _showUserFoundDialog(context, name);
+      //add data to friends list
+      Future<void> users = FirebaseFirestore.instance.collection('users').doc(userId).update({
+          'friends': FieldValue.arrayUnion([name])
+      });
+    } else {
+      //if name is not in database, show dialog
+      _showUserNotFoundDialog(context);
+    }
   }
   Future<void> fetchAllUserData() async {
-  // QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-  //       .collection('users') //collection name
-  //       .get(); // Get all documents
-  //   final allData = querySnapshot.docs.map((doc) => doc.data()).toList(); // Get all data
-  //   print(allData);
   FirebaseFirestore.instance.collection("users").get().then(
   (querySnapshot) {
     print("Successfully completed");
