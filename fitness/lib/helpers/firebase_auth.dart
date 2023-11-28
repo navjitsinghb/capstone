@@ -44,7 +44,6 @@ class FirebaseAuthHelper {
   static Future<User?> registerUsingEmailPhonePassword({
     required String name,
     required String email,
-    required String phoneNumber,
     required String password,
   }) async {
     FirebaseAuth auth = FirebaseAuth.instance;
@@ -107,71 +106,8 @@ class FirebaseAuthHelper {
 
     return user;
   }
-//verify phone number 
-// await FirebaseAuth.instance.verifyPhoneNumber(
-//   phoneNumber: '+44 7123 123 456',
-//   verificationCompleted: (PhoneAuthCredential credential) {},
-//   verificationFailed: (FirebaseAuthException e) {},
-//   codeSent: (String verificationId, int? resendToken) {},
-//   codeAutoRetrievalTimeout: (String verificationId) {},
-// );
 
 
-
-// Future<void> verifyPhoneNumber(
-// {String? phoneNumber,
-// PhoneMultiFactorInfo? multiFactorInfo,
-// required PhoneVerificationCompleted verificationCompleted,
-// required PhoneVerificationFailed verificationFailed,
-// required PhoneCodeSent codeSent,
-// required PhoneCodeAutoRetrievalTimeout codeAutoRetrievalTimeout,
-// @visibleForTesting String? autoRetrievedSmsCodeForTesting,
-// Duration timeout = const Duration(seconds: 30),
-// int? forceResendingToken,
-// MultiFactorSession? multiFactorSession}
-// )
-
-
-
-
-
-
-
-
-
-//phone auth sign in
-  // async static Future<User?> signInUsingPhoneNumber({
-  //   required String phoneNumber,
-  //   required Function(PhoneAuthCredential) phoneAuthCredentialSent,
-  //   required Function(String verificationId, int? resendToken) phoneCodeSent,
-  //   required Function(UserCredential) verificationCompleted,
-  //   required Function(FirebaseAuthException) verificationFailed,
-  //   required Function(String) codeAutoRetrievalTimeout,
-  // }) async {
-  //   FirebaseAuth auth = FirebaseAuth.instance;
-  //   User? user;
-
-  //   try {
-  //     await auth.verifyPhoneNumber(
-  //       phoneNumber: phoneNumber,
-  //     verificationCompleted: (PhoneAuthCredential credential) async {
-  //       user = (await auth.signInWithCredential(credential)).user;
-  //       verificationCompleted(await auth.signInWithCredential(credential));
-  //     },        
-  //     verificationFailed: verificationFailed,
-  //       codeSent: phoneCodeSent,
-  //       codeAutoRetrievalTimeout: codeAutoRetrievalTimeout,
-  //     );
-  //   } on FirebaseAuthException catch (e) {
-  //     if (e.code == 'invalid-phone-number') {
-  //       if (kDebugMode) {
-  //         print('The provided phone number is not valid.');
-  //       }
-  //     }
-  //   }
-
-  //   return user;
-  // }
 
 
 }

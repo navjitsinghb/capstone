@@ -10,6 +10,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 // import 'package:fitness/screens/name.dart';
 import 'package:fitness/helpers/firebase_auth.dart';
 import 'package:fitness/helpers/validator.dart';
+//firestone
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
 class SignUpScreen extends StatefulWidget {
   @override
@@ -44,6 +48,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         appBar: AppBar(
           backgroundColor: Colors.lightBlueAccent,
           title: Text('Create Account'),
+          automaticallyImplyLeading: false, // Disable automatic back arrow
           centerTitle: true,
         ),
         body: Padding(
@@ -91,23 +96,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         ),
                       ),
                       SizedBox(height: 12.0),
-                      //phone number 
-                      // TextFormField(
-                      //   controller: _phoneTextController,
-                      //   focusNode: _focusEmail,
-                      //   validator: (value) => Validator.validatePhoneNumber(
-                      //     phoneNumber: value,
-                      //   ),
-                      //   decoration: InputDecoration(
-                      //     hintText: "Phone Number",
-                      //     errorBorder: UnderlineInputBorder(
-                      //       borderRadius: BorderRadius.circular(6.0),
-                      //       borderSide: BorderSide(
-                      //         color: Colors.red,
-                      //       ),
-                      //     ),
-                      //   ),
-                      // ),
                       SizedBox(height: 12.0),
                       TextFormField(
                         controller: _passwordTextController,
@@ -145,15 +133,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                         .registerUsingEmailPhonePassword(
                                           name: _nameTextController.text,
                                           email: _emailTextController.text,
-                                          phoneNumber: _phoneTextController.text,
                                           password: _passwordTextController.text,
                                         );
-                                  //     .registerUsingEmailPassword(
-                                  //   name: _nameTextController.text,
-                                  //   email: _emailTextController.text,
-                                  //   password:
-                                  //   _passwordTextController.text,
-                                  // );
+                                        //add user data to firestone
+                                        _addUser(
+                                          _nameTextController.text, 
+                                        _emailTextController.text,  
+                                        _passwordTextController.text);
 
                                   setState(() {
                                     _isProcessing = false;
@@ -164,7 +150,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                         .pushAndRemoveUntil(
                                       MaterialPageRoute(
                                         builder: (context) =>
-                                            // HomeScreen(user: user),
+                                            // HomeScreen(user: user),                                            
                                             HealthDataScreen(user: user ),
                                       ),
                                       ModalRoute.withName('/'),
@@ -198,4 +184,23 @@ class _SignUpScreenState extends State<SignUpScreen> {
       ),
     );
   }
+
+  //add user data to firestone with the userid being the unique identifier
+  Future<void> _addUser(String name, String email, String password) async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    // Call the user's CollectionReference to add a new user
+    return await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .set({
+          'name': name, // John Doe
+          'email': email, // Stokes and Sons
+          'password': password, // 42
+          'uid': uid,
+          'friends': [],
+        })
+        .then((value) => print("User Added"))
+        .catchError((error) => print("Failed to add user: $error"));
+  }
+
 }

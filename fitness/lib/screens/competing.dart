@@ -1,56 +1,56 @@
-//friends page for the app, after someone clicks on the friends tab on bottom navigation bar
-
-// import 'package:fitness/screens/friends.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fitness/screens/login_screen.dart';
-import 'package:flutter/material.dart';
 // ignore: unused_import
 import 'package:fitness/helpers/firebase_auth.dart';
 import 'package:health/health.dart';
 import 'package:flutter/material.dart';
-import 'package:health/health.dart';
 //icons
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+//firestone
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fitness/screens/friends.dart';
 import 'package:fitness/screens/home.dart';
+// import 'package:fitness/screens/settings.dart';
 
-// import 'package:fitness/screens/profile.dart';
 
-class FriendsScreen extends StatefulWidget {
+class CompetingScreen extends StatefulWidget {
   @override
-  _FriendsScreenState createState() => _FriendsScreenState();
+  // ignore: library_private_types_in_public_api
+  _CompetingScreenState createState() => _CompetingScreenState();
 }
 
-class _FriendsScreenState extends State<FriendsScreen> {
+class _CompetingScreenState extends State<CompetingScreen> {
   int selectedPage = 0;
   String user = FirebaseAuth.instance.currentUser!.displayName.toString();
-_onTap() {
+  
+  _onTap() {
     Navigator.of(context)
         .push(MaterialPageRoute(builder: (BuildContext context) => _pages[selectedPage])); // this has changed
 
   }
   final List<Widget> _pages = [
+    //competing page, home page, friends page, settings page
+    CompetingScreen(),
     FriendsScreen(),
     HealthDataScreen(user: FirebaseAuth.instance.currentUser!),
     // SettingsScreen(),
 
   ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.lightBlueAccent,
-        title: Text('${user} Friends'),
+        title: Text('${user} Competing'),
         automaticallyImplyLeading: false, // Disable automatic back arrow
-
         centerTitle: true,
       ),
-      body: Center(
+      body: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            Text('Friends'),
+          children: [
+            Text('Competing'),
           ],
         ),
       ),
@@ -59,24 +59,24 @@ _onTap() {
         items: const [
           //home page, friends page, settings page, competing page
           BottomNavigationBarItem(
-            icon: Icon(Icons.people),
-            label: "Friends",
-            backgroundColor: Colors.amber,
+            icon: Icon(Icons.emoji_events),
+            label: 'Competing',
+            backgroundColor: Colors.lightBlueAccent,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
-            label: "Home",
-            backgroundColor: Colors.black,
+            label: 'Home',
+            backgroundColor: Colors.lightBlueAccent,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.run_circle_outlined),
-            label: "Competing",
-            backgroundColor: Colors.redAccent,
+            icon: Icon(Icons.people),
+            label: 'Friends',
+            backgroundColor: Colors.lightBlueAccent,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: "Settings",
-            backgroundColor: Colors.black,
+            icon: Icon(Icons.bar_chart),
+            label: 'Settings',
+            backgroundColor: Colors.lightBlueAccent,
           ),
         ],
         onTap: (index) {
@@ -86,8 +86,11 @@ _onTap() {
             _onTap();
         },
       ),
-
-
     );
   }
-}
+
+
+
+
+}//end of competing screen stateful widget
+

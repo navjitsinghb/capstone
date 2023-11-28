@@ -68,6 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
         appBar: AppBar(
           backgroundColor: Colors.lightBlueAccent,
           title: Text('Fitness App'),
+          automaticallyImplyLeading: false, // Disable automatic back arrow
           centerTitle: true,
         ),
         body: FutureBuilder(
