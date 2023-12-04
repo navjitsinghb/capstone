@@ -86,15 +86,17 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Image.asset("assets/images/bolt.png", fit: BoxFit.contain),
                       //background color: Colors.lightBlueAccent,
                     ),
-                    const Padding(
+                    Center(
+                    child: Padding(
                       padding: EdgeInsets.only(bottom: 30.0,top: 12),
                       child: Text(
-                        'Welcome People',
+                        '     Welcome to    MyFitnessBuddy',
                         style: TextStyle(
                           color: Colors.black,
                           fontSize: 40
                         )
                       ),
+                    ),
                     ),
                     Form(
                       key: _formKey,

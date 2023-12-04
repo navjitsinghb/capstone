@@ -48,7 +48,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         appBar: AppBar(
           backgroundColor: Colors.lightBlueAccent,
           title: Text('Create Account'),
-          automaticallyImplyLeading: false, // Disable automatic back arrow
+          automaticallyImplyLeading: true, // Disable automatic back arrow
           centerTitle: true,
         ),
         body: Padding(
@@ -197,7 +197,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
           'email': email, // Stokes and Sons
           'password': password, // 42
           'uid': uid,
+          //null
           'friends': [],
+          'competing': [],
         })
         .then((value) => print("User Added"))
         .catchError((error) => print("Failed to add user: $error"));

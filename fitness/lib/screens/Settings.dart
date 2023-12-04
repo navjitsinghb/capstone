@@ -10,16 +10,17 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fitness/screens/friends.dart';
 import 'package:fitness/screens/home.dart';
-import 'package:fitness/screens/settings.dart';
+import 'package:fitness/screens/competing.dart';
+// import 'package:fitness/screens/settings.dart';
 
 
-class CompetingScreen extends StatefulWidget {
+class SettingsScreen extends StatefulWidget {
   @override
   // ignore: library_private_types_in_public_api
-  _CompetingScreenState createState() => _CompetingScreenState();
+  _SettingsScreenState createState() => _SettingsScreenState();
 }
 
-class _CompetingScreenState extends State<CompetingScreen> {
+class _SettingsScreenState extends State<SettingsScreen> {
   int selectedPage = 0;
   String user = FirebaseAuth.instance.currentUser!.displayName.toString();
   
@@ -30,11 +31,10 @@ class _CompetingScreenState extends State<CompetingScreen> {
   }
   final List<Widget> _pages = [
     //competing page, home page, friends page, settings page
-    CompetingScreen(),
+    SettingsScreen(),
     HealthDataScreen(user: FirebaseAuth.instance.currentUser!),
     FriendsScreen(),
-    SettingsScreen(),
-
+    CompetingScreen(),
   ];
 
   @override
@@ -42,7 +42,7 @@ class _CompetingScreenState extends State<CompetingScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.lightBlueAccent,
-        title: Text('${user} Competing'),
+        title: Text('${user} Settings'),
         automaticallyImplyLeading: false, // Disable automatic back arrow
         centerTitle: true,
       ),
@@ -50,7 +50,7 @@ class _CompetingScreenState extends State<CompetingScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('Competing'),
+            Text('Settings'),
           ],
         ),
       ),
@@ -59,8 +59,8 @@ class _CompetingScreenState extends State<CompetingScreen> {
         items: const [
           //home page, friends page, settings page, competing page
           BottomNavigationBarItem(
-            icon: Icon(Icons.emoji_events),
-            label: 'Competing',
+            icon: Icon(Icons.settings),
+            label: 'Settings',
             backgroundColor: Colors.lightBlueAccent,
           ),
           BottomNavigationBarItem(
@@ -74,8 +74,8 @@ class _CompetingScreenState extends State<CompetingScreen> {
             backgroundColor: Colors.lightBlueAccent,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Settings',
+            icon: Icon(Icons.emoji_events),
+            label: 'Competing',
             backgroundColor: Colors.lightBlueAccent,
           ),
         ],

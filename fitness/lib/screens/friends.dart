@@ -2,18 +2,17 @@
 
 // import 'package:fitness/screens/friends.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:fitness/screens/login_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 // ignore: unused_import
-import 'package:fitness/helpers/firebase_auth.dart';
 import 'package:health/health.dart';
-import 'package:flutter/material.dart';
-import 'package:health/health.dart';
-//icons
+// ignore: unused_import
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:fitness/screens/friends.dart';
 import 'package:fitness/screens/home.dart';
+import 'package:fitness/screens/settings.dart';
+import 'package:fitness/screens/competing.dart';
 
 // import 'package:fitness/screens/profile.dart';
 
@@ -23,6 +22,7 @@ class FriendsScreen extends StatefulWidget {
 }
 
 class _FriendsScreenState extends State<FriendsScreen> {
+  final uid = FirebaseAuth.instance.currentUser!.uid;
   int selectedPage = 0;
   String user = FirebaseAuth.instance.currentUser!.displayName.toString();
 _onTap() {
@@ -33,7 +33,8 @@ _onTap() {
   final List<Widget> _pages = [
     FriendsScreen(),
     HealthDataScreen(user: FirebaseAuth.instance.currentUser!),
-    // SettingsScreen(),
+    CompetingScreen(),
+    SettingsScreen(),
 
   ];
   @override
@@ -46,14 +47,48 @@ _onTap() {
 
         centerTitle: true,
       ),
-      body: Center(
+      body: 
+      SingleChildScrollView(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            Text('Friends'),
+          children: [
+            //first look into friends list then find the uid of the friend
+            //then look into the users collection and find the user with the uid
+            //then get the uid of the friend and display the uid of the friend
+            StreamBuilder(
+              stream: FirebaseFirestore.instance.collection('users').doc(uid).collection('friends').snapshots(),
+              builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                if (!snapshot.hasData) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+              return Column(
+                //return fetched data function
+                children: snapshot.data!.docs.map((document) {
+                  return Center(
+                    child: Column(
+                      children: [
+                        TextButton(
+                          onPressed: () {
+                            fetchFriendsData();
+                          },
+                          child: Text(document['uid']),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+                
+              );
+              },
+            ),
           ],
         ),
       ),
+
+
+
+
         bottomNavigationBar: BottomNavigationBar(
         currentIndex: selectedPage,
         items: const [
@@ -90,4 +125,43 @@ _onTap() {
 
     );
   }
+//display friends subcollection of the user data
+  Future<void> fetchFriendsData() async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    // Call the user's CollectionReference to add a new user
+    final doc = FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('friends')
+        .get();
+    //display friends subcollection data
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Friends'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(doc.toString()),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Ok'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
+
+
+
 }
