@@ -26,7 +26,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _nameTextController = TextEditingController();
   final _emailTextController = TextEditingController();
   final _passwordTextController = TextEditingController();
-  final _phoneTextController = TextEditingController();
+  // final _phoneTextController = TextEditingController();
 
   final _focusName = FocusNode();
   final _focusEmail = FocusNode();

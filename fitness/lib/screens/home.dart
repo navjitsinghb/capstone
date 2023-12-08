@@ -21,6 +21,7 @@ import 'package:flutter/widgets.dart';
 
 Image kcalImage = Image.asset('assets/images/kcal.png');
 Image footstepsImage = Image.asset('assets/images/footsteps.png');
+Image distanceImage = Image.asset('assets/images/running.png');
 
 
 class HealthDataScreen extends StatefulWidget {
@@ -39,10 +40,12 @@ class _HealthDataScreenState extends State<HealthDataScreen> {
   String? steppage; //for homecard
   double? steps = 52; 
   double? activeEnergy = 10;
+  double? running = 20;
   String? calories;
 
   String? formSteps;
   String? formCalories;
+  String? formDistance;
 
   String? bloodPreSys;
   String? moveMins;
@@ -95,6 +98,7 @@ _onTap() {
       HealthDataType.ACTIVE_ENERGY_BURNED,
       HealthDataType.EXERCISE_TIME,
       HealthDataType.WORKOUT,
+      HealthDataType.DISTANCE_WALKING_RUNNING,
     ];
 
     // get data within the last 24 hours
@@ -120,7 +124,6 @@ _onTap() {
             } else if (h.type == HealthDataType.STEPS) {
               steps = "${h.value}" as double?;
               steppage = "${h.value}";
-              steppage = "200.3";
             } else if (h.type == HealthDataType.ACTIVE_ENERGY_BURNED) {
               calories = "${h.value}";
             }
@@ -133,6 +136,7 @@ _onTap() {
             }
             else if (h.type == HealthDataType.DISTANCE_WALKING_RUNNING) {
               distance = "${h.value}";
+              running = "${h.value}" as double?;
             }
 
 
@@ -143,7 +147,7 @@ _onTap() {
           _firestore.collection('users').doc(uid).update({
             'heart rate': heartRate,
             'blood pressure': bp,
-            'steps': steppage,
+            'steps': steps,
             'calories': activeEnergy,
             'workout': workout,
             'move minutes': moveMins,
@@ -242,8 +246,8 @@ _onTap() {
         Column(
           children: [
             //press a button to fill out a form to add goals
-            TextButton(
-              onPressed: () async {
+            GestureDetector(
+              onTap: () async {
                 final uid = FirebaseAuth.instance.currentUser!.uid;
                 showDialog(
                   context: context,
@@ -283,6 +287,19 @@ _onTap() {
                                 formCalories = value;
                               },
                             ),
+                            TextFormField(
+                              decoration: const InputDecoration(labelText: 'Distance in miles'),
+                              keyboardType: TextInputType.number,
+                              validator: (formDistance) {
+                                if (formDistance == null || formDistance.isEmpty) {
+                                  return 'Please enter distance you want to walk/run';
+                                }
+                                return null;
+                              },
+                              onSaved: (value) {
+                                formDistance = value;
+                              },
+                            )
                           ],
                         ),
                       ),
@@ -294,12 +311,14 @@ _onTap() {
                               _formKey.currentState!.save();
                               print(formSteps);
                               print(formCalories);
+                              print(formDistance);
                               _firestore.collection('users').doc(uid).update({
                                 'step goals': formSteps,
                                 'calorie goals': formCalories,
+                                'distance goals': formDistance,
                                 'heart rate': heartRate,
                                 'blood pressure': bp,
-                                'steps': steppage,
+                                'steps': steps,
                                 'calories': activeEnergy,
                                 'workout': workout,
                                 'move minutes': moveMins,
@@ -319,13 +338,12 @@ _onTap() {
               },
             );
           },
-            child: 
-            const Text('Add Goals'),
-          ),
-          const SizedBox(height: 10),
+            // child: 
+            // const Text('Add Goals'),
+          // ),
 
           //display home card data with steps and calories
-Column(
+child: Column(
   children: [
     // Call firestore data
     StreamBuilder(
@@ -353,6 +371,13 @@ Column(
               heading: "Calories",
               value: activeEnergy ?? 0,
             ),
+            HomeCard(
+              title: "Distance",
+              goal: userDocument['distance goals'] ?? "0",
+              iconPath: "assets/images/running.jpeg",
+              heading: "Distance",
+              value: running ?? 0,
+            ),
           ],
         );
       },
@@ -360,7 +385,7 @@ Column(
     const SizedBox(height: 10),
   ],
 ),
-
+        ),
 
             //health data cards
             Row(
@@ -489,8 +514,20 @@ Column(
       ),
     );
   }
- 
-
+ //remove from friends list
+  Future<void> _removeFriend(String friendId) async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    await _firestore.collection('users').doc(uid).update({
+      'friends': FieldValue.arrayRemove([friendId]),
+    });
+  }
+//remove from competing list
+  Future<void> _removeFriend1(String friendId) async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    await _firestore.collection('users').doc(uid).update({
+      'competing': FieldValue.arrayRemove([friendId]),
+    });
+  }
 
   //add goals to firestore
   Future<void> _addGoals(num steps, num calories) async {
@@ -540,8 +577,12 @@ void _searchForUser(BuildContext context, String name) async {
         .collection('users')
         .where('name', isEqualTo: name)
         .get();
+    //print out friends userID
+
       //check if name in textbox is in database
     if (querySnapshot.docs.isNotEmpty) {
+      String friendUserId = querySnapshot.docs.first.id;
+      // print(userId);
       //if current signed in user tries to add themselves, show user not found dialog
       if (name == FirebaseAuth.instance.currentUser!.displayName) {
         _showUserNotFoundDialog(context);
@@ -551,14 +592,14 @@ void _searchForUser(BuildContext context, String name) async {
       _showUserFoundDialog(context, name);
       //add data to friends list
       Future<void> users1 = FirebaseFirestore.instance.collection('users').doc(userId).update({
-        'friends': FieldValue.arrayUnion([name]),
+        'friends': FieldValue.arrayUnion([friendUserId]),
       });
       //shows all uid in firestore
       //get data and seperate each field by comma
       final allData = querySnapshot.docs.map((doc) => doc.data()).toList(); // Get all data
-      Future<void> users = FirebaseFirestore.instance.collection('users').doc(userId).collection('friends').add({
-        'friends': allData,
-      });
+      // Future<void> users = FirebaseFirestore.instance.collection('users').doc(userId).collection('friends').add({
+      //   'friends': allData,
+      // });
     } else {
       //if name is not in database, show dialog
       _showUserNotFoundDialog(context);
@@ -619,29 +660,102 @@ void _searchForUser(BuildContext context, String name) async {
 
 //friends list for current user 
 Future <void> friendsList() async {
-  final uid = FirebaseAuth.instance.currentUser!.uid;
-  final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
-  // show friends separated by commas
-  final friends = doc['friends'].join(', ');
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .get();
+  //get all friendsIds in the friends list in firestore
+  List<String> friendsList = [];
+  List<String> friendsNames = [];
+  List<String> friendsIds = [];
+  //get all friendsIds in the friends list in firestore
+  //for each doc that is equal to the friends list id, add to friends list
+  querySnapshot.docs.forEach((doc) {
+    if (doc.id == uid ) {// if doc id is not equal to current user id and friends list contains current user id
+      friendsList = List.from(doc['friends']);
+    }
+
+  });
+querySnapshot.docs.forEach((doc) {
+  if (friendsList.contains(doc.id)) {
+    var names = doc['name'] as String;
+    friendsNames.add(names);
+    var ids = doc.id as String;
+    friendsIds.add(ids);
+
+  }
+});
+  print(friendsNames);
+
+  //print each of the friends names in their own line and put the 3 dot overflow menu on the right side of each name that the person can click on to see whther they want to compete with that person or not, or remove them from their friends list, or going back to the friends list
   // ignore: use_build_context_synchronously
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: const Text('Friends List'),
-        content: Text('Friends: $friends'),
-        actions: [
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context); // Close the dialog
-            },
-            child: const Text('OK'),
-          ),
-        ],
-      );
-    },
-  );
+  showDialog(context: context, 
+  builder: (BuildContext context) {
+  return Scaffold(
+  appBar: AppBar(
+    leading: IconButton(
+      icon: Icon(Icons.close),
+      onPressed: () {
+        // Handle the "X" button press to go back to the home screen
+        Navigator.pop(context);
+      },
+    ),
+    title: Text('Friends List'),
+  ),
+        body: Container(
+          height: 200,
+          child:
+        Card(
+        child:
+        ListView.builder(
+          itemCount: friendsNames.length,
+          itemBuilder: (context, index) {
+            String friendName = friendsNames[index];
+            String friendId = friendsIds[index];
+            return ListTile(
+              title: Text(friendName),
+              trailing: PopupMenuButton<String>(
+                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                  PopupMenuItem<String>(
+                    value: 'compete',
+                    child: Text('Compete with $friendName'),
+                  ),
+                  PopupMenuItem<String>(
+                    value: 'remove',
+                    child: Text('Remove $friendName from friends list'),
+                  ),
+                  PopupMenuItem<String>(
+                    value: 'remove',
+                    child: Text('Remove $friendName from competing'),
+                  )
+                ],
+                onSelected: (String value) {
+                  if (value == 'compete') {
+                    // Handle the "Compete" action
+                    //add id of friend to competing array in firestone in current user and go to competing page
+                    _firestore.collection('users').doc(uid).update({
+                      'competing': FieldValue.arrayUnion([friendId]),
+                    });
+                  } else if (value == 'remove') {
+                    // Handle the "Remove" action
+                    //remove friends from friends list
+                    _removeFriend(friendName);
+                  } else if (value == 'remove') {
+                    // Handle the "Remove" action
+                    //remove friends from friends list
+                    _removeFriend1(friendName);
+                  }
+                },
+              ),
+            );
+          },
+        ),
+        ),
+        ),
+    );
+},
+);
 }
+
 
 
 Widget healthCard(

@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fitness/screens/login_screen.dart';
 // ignore: unused_import
-import 'package:fitness/helpers/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:health/health.dart';
 import 'package:flutter/material.dart';
 //icons
@@ -22,6 +22,7 @@ class CompetingScreen extends StatefulWidget {
 class _CompetingScreenState extends State<CompetingScreen> {
   int selectedPage = 0;
   String user = FirebaseAuth.instance.currentUser!.displayName.toString();
+  String userId = FirebaseAuth.instance.currentUser!.uid.toString();
   
   _onTap() {
     Navigator.of(context)
@@ -46,14 +47,78 @@ class _CompetingScreenState extends State<CompetingScreen> {
         automaticallyImplyLeading: false, // Disable automatic back arrow
         centerTitle: true,
       ),
-      body: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('Competing'),
-          ],
+      //shows friend's name and if both current user and friend are in each other friends array then compete with them to see who has more steps
+      body: 
+        SingleChildScrollView(
+          child: Column(
+            // mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Text('Competing'),
+                StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                  stream: FirebaseFirestore.instance.collection('users').doc(userId).snapshots(),
+                  builder: (context, AsyncSnapshot<DocumentSnapshot<Map<String, dynamic>>> snapshot) {
+                    if (!snapshot.hasData) {
+                      return const Text("Loading...");
+                    }
+                    DocumentSnapshot<Map<String, dynamic>> userDocument = snapshot.data!;
+                    // Put all friends list into a list
+                    List<dynamic> friendUserIds = (snapshot.data!.data() as Map<String, dynamic>)['friends'];
+                    print(friendUserIds);
+                    CollectionReference<Map<String, dynamic>> collectionRef = FirebaseFirestore.instance.collection('users');
+                    List<Future<DocumentSnapshot<Map<String, dynamic>>>> friendFutures = friendUserIds.map((friendId) {
+                        return collectionRef.doc(friendId).get() as Future<DocumentSnapshot<Map<String, dynamic>>>;
+                    }).toList();
+
+                    return FutureBuilder<List<DocumentSnapshot<Map<String, dynamic>>>>(
+                      future: Future.wait(friendFutures),
+                      builder: (context, AsyncSnapshot<List<DocumentSnapshot<Map<String, dynamic>>>> snapshot) {
+                        if (!snapshot.hasData) {
+                          return const Text("Loading...");
+                        }
+                        List<DocumentSnapshot<Map<String, dynamic>>> friendsData = snapshot.data!;
+                        // for (int index = 0; index < friendsData.length; index++) {
+                        //     DocumentSnapshot<Map<String, dynamic>> friendDocument = friendsData[index];
+                        //     String friendsList = friendDocument['name'];
+                        //     print(friendsList);
+
+                        // }
+                        // list view
+                        return ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: friendsData.length,
+                          itemBuilder: (context, index) {
+                            DocumentSnapshot<Map<String, dynamic>> friendDocument = friendsData[index];
+                            String friendsList = friendDocument['name'];
+                            print(friendsList);
+                            return ListTile(
+                              title: Text(friendsList),
+                              trailing: Icon(Icons.emoji_events),
+                              onTap: () {
+                                // Navigator.push(
+                                //   context,
+                                //   MaterialPageRoute(builder: (context) => CompetingScreen()),
+                                // );
+                              },
+                            );
+                          },
+                        );
+
+
+
+
+
+                    // Stream<QuerySnapshot<Map<String, dynamic>>> collectionRef2 = FirebaseFirestore.instance.collection('users').where('users', whereIn: friendUserIds).snapshots();
+
+                    return Container(); // Placeholder return statement
+                  },
+                    );
+                  },
+                ),
+            ],
+          ),
         ),
-      ),
+
+
         bottomNavigationBar: BottomNavigationBar(
         currentIndex: selectedPage,
         items: const [
@@ -91,6 +156,13 @@ class _CompetingScreenState extends State<CompetingScreen> {
 
 
 
+fetchFriendData (String friendId) async {
+  CollectionReference<Map<String, dynamic>> collectionRef = FirebaseFirestore.instance.collection('users');
+  DocumentSnapshot<Map<String, dynamic>> friendDocument = await collectionRef.doc(friendId).get();
+  List<dynamic> friendsList = friendDocument['friends'];
+  List<DocumentSnapshot<Map<String, dynamic>>> friendsData = friendsList.map((friendId) => collectionRef.doc(friendId).get()).cast<DocumentSnapshot<Map<String, dynamic>>>().toList();
+  return friendsData;
+}
 
 }//end of competing screen stateful widget
 

@@ -108,7 +108,7 @@ class HomeCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
-                          '${AppText.steps}: $value',
+                          '${"Progress"}: $value',
                           style: _titleStyle,
                         ),
                         Text(

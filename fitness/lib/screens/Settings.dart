@@ -61,7 +61,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),
             label: 'Settings',
-            backgroundColor: Colors.lightBlueAccent,
+            backgroundColor: Colors.black,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
