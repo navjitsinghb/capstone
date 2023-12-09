@@ -181,6 +181,7 @@ _onTap() {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        // backgroundColor: const Color.fromARGB(255, 0, 0, 0),
         //title: display username of user and healthdata
         title: Text("Welcome ${widget.user.displayName}"), //${widget.user.displayName}
         automaticallyImplyLeading: false, // Disable automatic back arrow
@@ -444,12 +445,12 @@ child: Column(
           BottomNavigationBarItem(
             icon: Icon(Icons.people),
             label: "Friends",
-            backgroundColor: Colors.amber,
+            backgroundColor: Color.fromARGB(255, 0, 0, 0),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.run_circle_outlined),
             label: "Competing",
-            backgroundColor: Colors.redAccent,
+            backgroundColor: Color.fromARGB(255, 0, 0, 0),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),

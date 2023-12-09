@@ -42,7 +42,6 @@ class _CompetingScreenState extends State<CompetingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.lightBlueAccent,
         title: Text('${user} Competing'),
         automaticallyImplyLeading: false, // Disable automatic back arrow
         centerTitle: true,
@@ -62,22 +61,22 @@ class _CompetingScreenState extends State<CompetingScreen> {
                     }
                     DocumentSnapshot<Map<String, dynamic>> userDocument = snapshot.data!;
                     // Put all friends list into a list
-                    List<dynamic> friendUserIds = (snapshot.data!.data() as Map<String, dynamic>)['friends'];
-                    print(friendUserIds);
+                    List<dynamic> compUserIds = (snapshot.data!.data() as Map<String, dynamic>)['competing'];
+                    print(compUserIds);
                     CollectionReference<Map<String, dynamic>> collectionRef = FirebaseFirestore.instance.collection('users');
-                    List<Future<DocumentSnapshot<Map<String, dynamic>>>> friendFutures = friendUserIds.map((friendId) {
+                    List<Future<DocumentSnapshot<Map<String, dynamic>>>> compFutures = compUserIds.map((friendId) {
                         return collectionRef.doc(friendId).get() as Future<DocumentSnapshot<Map<String, dynamic>>>;
                     }).toList();
 
                     return FutureBuilder<List<DocumentSnapshot<Map<String, dynamic>>>>(
-                      future: Future.wait(friendFutures),
+                      future: Future.wait(compFutures),
                       builder: (context, AsyncSnapshot<List<DocumentSnapshot<Map<String, dynamic>>>> snapshot) {
                         if (!snapshot.hasData) {
                           return const Text("Loading...");
                         }
-                        List<DocumentSnapshot<Map<String, dynamic>>> friendsData = snapshot.data!;
-                        // for (int index = 0; index < friendsData.length; index++) {
-                        //     DocumentSnapshot<Map<String, dynamic>> friendDocument = friendsData[index];
+                        List<DocumentSnapshot<Map<String, dynamic>>> compsData = snapshot.data!;
+                        // for (int index = 0; index < compsData.length; index++) {
+                        //     DocumentSnapshot<Map<String, dynamic>> friendDocument = compsData[index];
                         //     String friendsList = friendDocument['name'];
                         //     print(friendsList);
 
@@ -85,21 +84,33 @@ class _CompetingScreenState extends State<CompetingScreen> {
                         // list view
                         return ListView.builder(
                           shrinkWrap: true,
-                          itemCount: friendsData.length,
+                          itemCount: compsData.length,
                           itemBuilder: (context, index) {
-                            DocumentSnapshot<Map<String, dynamic>> friendDocument = friendsData[index];
+                            DocumentSnapshot<Map<String, dynamic>> friendDocument = compsData[index];
                             String friendsList = friendDocument['name'];
-                            print(friendsList);
-                            return ListTile(
-                              title: Text(friendsList),
-                              trailing: Icon(Icons.emoji_events),
-                              onTap: () {
-                                // Navigator.push(
-                                //   context,
-                                //   MaterialPageRoute(builder: (context) => CompetingScreen()),
-                                // );
+                            return CompetitorsCard(
+                              competitors: [friendsList],
+                              competitorStats: {
+                                friendsList: {
+                                  'distance': (friendDocument['distance'] ?? 0).toInt(),
+                                  'calories': (friendDocument['calories'] ?? 0).toInt(),
+                                  'steps': (friendDocument['steps'] ?? 0).toInt(),
+                                },
                               },
+                              winner: "",
                             );
+                            
+
+                            // return ListTile(
+                            //   title: Text(friendsList),
+                            //   trailing: Icon(Icons.emoji_events),
+                            //   onTap: () {
+                            //     // Navigator.push(
+                            //     //   context,
+                            //     //   MaterialPageRoute(builder: (context) => CompetingScreen()),
+                            //     // );
+                            //   },
+                            // );
                           },
                         );
 
@@ -107,7 +118,7 @@ class _CompetingScreenState extends State<CompetingScreen> {
 
 
 
-                    // Stream<QuerySnapshot<Map<String, dynamic>>> collectionRef2 = FirebaseFirestore.instance.collection('users').where('users', whereIn: friendUserIds).snapshots();
+                    // Stream<QuerySnapshot<Map<String, dynamic>>> collectionRef2 = FirebaseFirestore.instance.collection('users').where('users', whereIn: compUserIds).snapshots();
 
                     return Container(); // Placeholder return statement
                   },
@@ -126,22 +137,22 @@ class _CompetingScreenState extends State<CompetingScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.emoji_events),
             label: 'Competing',
-            backgroundColor: Colors.lightBlueAccent,
+            backgroundColor: Color.fromARGB(255, 0, 0, 0),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Home',
-            backgroundColor: Colors.lightBlueAccent,
+            backgroundColor: Color.fromARGB(255, 0, 0, 0),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.people),
             label: 'Friends',
-            backgroundColor: Colors.lightBlueAccent,
+            backgroundColor: Color.fromARGB(255, 0, 0, 0),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),
             label: 'Settings',
-            backgroundColor: Colors.lightBlueAccent,
+            backgroundColor: Color.fromARGB(255, 0, 0, 0),
           ),
         ],
         onTap: (index) {
@@ -160,9 +171,82 @@ fetchFriendData (String friendId) async {
   CollectionReference<Map<String, dynamic>> collectionRef = FirebaseFirestore.instance.collection('users');
   DocumentSnapshot<Map<String, dynamic>> friendDocument = await collectionRef.doc(friendId).get();
   List<dynamic> friendsList = friendDocument['friends'];
-  List<DocumentSnapshot<Map<String, dynamic>>> friendsData = friendsList.map((friendId) => collectionRef.doc(friendId).get()).cast<DocumentSnapshot<Map<String, dynamic>>>().toList();
-  return friendsData;
+  List<DocumentSnapshot<Map<String, dynamic>>> compsData = friendsList.map((friendId) => collectionRef.doc(friendId).get()).cast<DocumentSnapshot<Map<String, dynamic>>>().toList();
+  return compsData;
 }
 
+
+
+
 }//end of competing screen stateful widget
+
+
+
+//goal card2 function to show progress of competitors and who is winning along with their stats like distance, cals, and steps so far and the winner at the end of the day gets a notification that says they won
+class CompetitorsCard extends StatelessWidget {
+  final List<String> competitors;
+  final Map<String, Map<String, int>> competitorStats;
+  final String winner;
+
+  CompetitorsCard({
+    required this.competitors,
+    required this.competitorStats,
+    required this.winner,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Column(
+        children: [
+          const Text(
+            'Competitors',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 10),
+          ListView.builder(
+            shrinkWrap: true,
+            itemCount: competitors.length,
+            itemBuilder: (context, index) {
+              final competitor = competitors[index];
+              final stats = competitorStats[competitor];
+              final distance = stats?['distance'];
+              final calories = stats?['calories'];
+              final steps = stats?['steps'];
+              return ListTile(
+                title: Text(competitor),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Distance: $distance'),
+                    Text('Calories: $calories'),
+                    Text('Steps: $steps'),
+                  ],
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'Winner: $winner',
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+
+
+
+
+
+
 

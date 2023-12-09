@@ -276,7 +276,6 @@ Widget goalCard3(String name, String goal, String iconPath, String heading, doub
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.lightBlueAccent,
         title: Text('${user} Friends'),
         automaticallyImplyLeading: false, // Disable automatic back arrow
 
@@ -420,7 +419,7 @@ Widget goalCard3(String name, String goal, String iconPath, String heading, doub
           BottomNavigationBarItem(
             icon: Icon(Icons.people),
             label: "Friends",
-            backgroundColor: Color.fromARGB(255, 161, 146, 72),
+            backgroundColor: Color.fromARGB(255, 0, 0, 0),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -430,7 +429,7 @@ Widget goalCard3(String name, String goal, String iconPath, String heading, doub
           BottomNavigationBarItem(
             icon: Icon(Icons.run_circle_outlined),
             label: "Competing",
-            backgroundColor: Colors.redAccent,
+            backgroundColor: Color.fromARGB(255, 0, 0, 0),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),
