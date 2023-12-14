@@ -29,15 +29,23 @@ class HealthDataScreen extends StatefulWidget {
 }
 
 class _HealthDataScreenState extends State<HealthDataScreen> {
+    // List<HealthDataPoint> _healthDataList = [];
+
   final _formKey = GlobalKey<FormState>();
   FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  String? heartRate = "82";
+  // String? heartRate = "82";
+  String? heartRate;
   String? bp;
   String? steppage; //for homecard
-  double? steps = 52; //for goalcard and firestore
-  double? activeEnergy = 10;
-  double? running = 20;
-  double? movingMins = 30;
+  // double? steps = 52; //for goalcard and firestore
+  // double? activeEnergy = 10;
+  // double? running = 20;
+  // double? movingMinss = 30;
+    int? steps; //for goalcard and firestore
+  double? activeEnergy;
+  double? running;
+  // double? movingMins;
+
   String? calories;
 
   String? formSteps;
@@ -45,7 +53,8 @@ class _HealthDataScreenState extends State<HealthDataScreen> {
   String? formDistance;
 
   String? bloodPreSys;
-  String? moveMins = "33";
+  String? moveMins;
+  // String? moveMins;
   String? bloodPreDia;
   String? workout;
   String? distance;
@@ -100,16 +109,16 @@ _onTap() {
 
     // get data within the last 24 hours
     final now = DateTime.now();
-    final yesterday = now.subtract(const Duration(days: 2)); //within the past week
+    final yesterday = now.subtract(const Duration(days: 2)); //within the past day
 
     // requesting access to the data types before reading them
     bool requested = await health.requestAuthorization(types);
+
     if (requested) {
       try {
         // fetch health data
         healthData = await health.getHealthDataFromTypes(yesterday, now, types);//get health data from yesterday to now
         //fetch data and store in firebase firestore
-        steps = health.getTotalStepsInInterval(yesterday, now) as double?;
 
 
         if (healthData.isNotEmpty) {
@@ -123,6 +132,8 @@ _onTap() {
               steppage = "${h.value}";
             } else if (h.type == HealthDataType.ACTIVE_ENERGY_BURNED) {
               calories = "${h.value}";
+              // activeEnergy = h.value as double?;
+              // print(activeEnergy);
             }
             //workout 
             else if (h.type == HealthDataType.WORKOUT) {
@@ -130,10 +141,12 @@ _onTap() {
             }
             else if (h.type == HealthDataType.EXERCISE_TIME) {
               moveMins = "${h.value}";
+
+              
             }
             else if (h.type == HealthDataType.DISTANCE_WALKING_RUNNING) {
               distance = "${h.value}";
-              running = "${h.value}" as double?;
+              // running = "${h.value}" as double?;
             }
 
           if (bloodPreSys != "null" && bloodPreDia != "null") {
@@ -141,15 +154,13 @@ _onTap() {
           }
           final uid = FirebaseAuth.instance.currentUser!.uid;
           _firestore.collection('users').doc(uid).update({
-            'heart rate': heartRate,
+            'heart rate': bloodPreSys,
             'blood pressure': bp,
-            'steps': steps,
-            'calories': activeEnergy,
-            'healthCal': calories,
+            'steps': steppage,
+            'calories': calories,
             'workout': workout,
             'move minutes': moveMins,
             'distance': distance,
-
                 });
           }
 
@@ -315,13 +326,13 @@ _onTap() {
                                 'step goals': formSteps,
                                 'calorie goals': formCalories,
                                 'distance goals': formDistance,
-                                'heart rate': heartRate,
-                                'blood pressure': bp,
-                                'steps': steps,
-                                'calories': activeEnergy,
-                                'workout': workout,
-                                'move minutes': moveMins,
-                                'distance': distance,
+                                // 'heart rate': heartRate,
+                                // 'blood pressure': bp,
+                                // 'steps': steps,
+                                // 'calories': activeEnergy,
+                                // 'workout': workout,
+                                // 'move minutes': moveMins,
+                                // 'distance': distance,
                               });
                               Navigator.pop(context);
                               //refresh home page
@@ -352,15 +363,21 @@ child: Column(
           return const Text("Loading...");
         }
         var userDocument = (snapshot.data! as DocumentSnapshot).data() as Map<String, dynamic>;
+        //user data distance from firestore
+        String? distance = userDocument['distance'] ?? "0.0";
+        double? distances = double.parse(distance ?? "0.0");
+        String? distancess = distances.toStringAsFixed(2);
+
         // Calories and steps
         return Column(
           children: [
             HomeCard(
               title: "Steps",
-            goal: userDocument['step goals'] ?? "0.0",
+              goal: userDocument['step goals'] ?? "0.0",
               iconPath: "assets/images/footsteps.png",
               heading: "Steps",
-              value: steps ?? 0.0,
+              // value: double.parse(steppage ?? "0.0"),
+              value: double.parse(userDocument['steps'] ?? '0'),
             ),
             const SizedBox(height: 5),
             HomeCard(
@@ -368,7 +385,7 @@ child: Column(
               goal: userDocument['calorie goals'] ?? "0.0",
               iconPath: "assets/images/kcal.png",
               heading: "Calories",
-              value: activeEnergy ?? 0,
+              value: double.parse(userDocument['calories'] ?? '0'), 
             ),
             const SizedBox(height: 5),
             HomeCard(
@@ -376,7 +393,7 @@ child: Column(
               goal: userDocument['distance goals'] ?? "0.0",
               iconPath: "assets/images/running.jpeg",
               heading: "Distance",
-              value: running ?? 0,
+              value: double.parse(distancess),
             ),
 
           ],
@@ -388,46 +405,74 @@ child: Column(
 ),
         ),
 
-            //health data cards
-            Row(
+Container(
+  width: double.infinity,
+  child: Row(
+    children: [
+      Expanded(
+        child: StreamBuilder(
+          stream: FirebaseFirestore.instance.collection('users').doc(userId).snapshots(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return const Text("Loading...");
+            }
+            var userDocument = (snapshot.data! as DocumentSnapshot).data() as Map<String, dynamic>;
+            //heart rate
+            return Column(
               children: [
-                Expanded(
-                    child: healthCard(
+                Row(
+                  children: [
+                    Expanded(
+                      child: healthCard(
                         title: "Heart rate",
                         image: "assets/images/health.jpeg",
-                        data: "${heartRate ?? 'Null'} bpm",
-                        color: const Color(0xFFffffff))), //white color code: 0xFFffffff
-                const SizedBox(
-                  width: 10,
-                ),
-                Expanded(
-                    child: healthCard(
+                        data: '${userDocument['heart rate'] ?? "0.0" } bpm',
+                        // data: bp ?? "0.011",
+                        color: const Color(0xFFffffff),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: healthCard(
                         title: "Exercise Time",
-                        data: "${moveMins ?? 'Null'} mins",
+                        data: '${userDocument['move minutes'] ?? "0.0" } mins',
+                        // data: moveMins ?? "0.0",
                         image: "assets/images/time.jpeg",
-                        color: const Color(0xFFffffff))),
-              ],
-            ),
-            Row(
-              children: [
-                Expanded(
-                    child: healthCard(
+                        color: const Color(0xFFffffff),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: healthCard(
                         title: "Step count",
                         image: "assets/images/step.jpeg",
-                        data: "${steps ?? '0'} steps",
-                        color: const Color(0xFFffffff))),
-                const SizedBox(
-                  width: 10,
-                ),
-                Expanded(
-                    child: healthCard(
+                        data: '${userDocument['steps'] ?? "0.0" } steps',
+                        color: const Color(0xFFffffff),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: healthCard(
                         title: "Calories burned",
                         image: "assets/images/kcal.jpeg",
-                        data: "${activeEnergy ?? '0'} kcal",
-                        color: const Color(0xFFffffff))
-                        ),
+                        data: '${userDocument['calories'] ?? "0.0" } kcal',
+                        color: const Color(0xFFffffff),
+                      ),
+                    ),
+                  ],
+                ),
               ],
-            )
+            );
+          },
+        ),
+      ),
+    ],
+  ),
+),
           ],
         ),
       ),

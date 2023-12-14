@@ -93,13 +93,17 @@ class _CompetingScreenState extends State<CompetingScreen> {
                           itemBuilder: (context, index) {
                             DocumentSnapshot<Map<String, dynamic>> friendDocument = compsData[index];
                             String friendsList = friendDocument['name'];
+                            double distance = double.tryParse(friendDocument['distance'].toString()) ?? 0.0;
+                            double healthCal = double.tryParse(friendDocument['calories'].toString()) ?? 0.0;
+                            double steps = double.tryParse(friendDocument['steps'].toString()) ?? 0.0;
+
                             return CompetitorsCard(
                               competitors: [friendsList],
                               competitorStats: {
                                 friendsList: {
-                                  'distance': (friendDocument['distance'] ?? 0).toInt(),
-                                  'calories': (friendDocument['calories'] ?? 0).toInt(),
-                                  'steps': (friendDocument['steps'] ?? 0).toInt(),
+                                  'distance': distance.toInt(),
+                                  'calories': healthCal.toInt(),
+                                  'steps': steps.toInt(),
                                 },
                               },
                               winner: winner ?? 'Null',

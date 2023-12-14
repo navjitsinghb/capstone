@@ -328,22 +328,26 @@ Widget goalCard3(String name, String goal, String iconPath, String heading, doub
                               if (friendSnapshot.hasData) {
                                 List<DocumentSnapshot<Map<String, dynamic>>> friendDocuments = friendSnapshot.data!;
                                 List<Widget> goalscards = friendDocuments.map((friendDocument) {
+                                double steps = double.tryParse(friendDocument['steps'].toString()) ?? 0.0;
+                                double calories = double.tryParse(friendDocument['calories'].toString()) ?? 0.0;
                                   return Column(
                                     children: 
                                     [
                                       //goalcard2
-                                      goalCard3(
-                                        friendDocument['name'],
-                                        friendDocument['step goals'], 
-                                        'assets/images/footsteps.png', 
-                                        'Steps', 
-                                        friendDocument['steps']),
-                                      goalCard2(
-                                        friendDocument['calorie goals'], 
-                                        'assets/images/kcal.png', 
-                                        'Calories', 
-                                        friendDocument['calories']),
-                                    ],
+                                          goalCard3(
+                                            friendDocument['name'],
+                                            friendDocument['step goals'],
+                                            'assets/images/footsteps.png',
+                                            'Steps',
+                                            steps,
+                                          ),
+                                          goalCard2(
+                                            friendDocument['calorie goals'],
+                                            'assets/images/kcal.png',
+                                            'Calories',
+                                            calories,
+                                          ),                                    
+                                        ],
                                   );
                                 }).toList();
                                 //goalcard2 for future widget
