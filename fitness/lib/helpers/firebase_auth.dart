@@ -107,6 +107,31 @@ class FirebaseAuthHelper {
     return user;
   }
 
+  static Future<void> signInUsingUsernamePassword(
+      {required String username, required String password}) async {
+    FirebaseAuth auth = FirebaseAuth.instance;
+    // ignore: unused_local_variable
+    User? user;
+
+    try {
+      UserCredential userCredential = await auth.signInWithEmailAndPassword(
+        email: username,
+        password: password,
+      );
+      user = userCredential.user;
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found') {
+        if (kDebugMode) {
+          print('No user found for that email.');
+        }
+      } else if (e.code == 'wrong-password') {
+        if (kDebugMode) {
+          print('Wrong password provided.');
+        }
+      }
+    }
+  }
+
 
 
 

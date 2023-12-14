@@ -1,10 +1,13 @@
+// ignore_for_file: unused_local_variable
+
 import 'package:firebase_auth/firebase_auth.dart';
+// ignore: unused_import
 import 'package:fitness/screens/login_screen.dart';
 // ignore: unused_import
 import 'package:flutter/foundation.dart';
-import 'package:health/health.dart';
 import 'package:flutter/material.dart';
 //icons
+// ignore: unused_import
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 //firestone
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -65,7 +68,7 @@ class _CompetingScreenState extends State<CompetingScreen> {
                     print(compUserIds);
                     CollectionReference<Map<String, dynamic>> collectionRef = FirebaseFirestore.instance.collection('users');
                     List<Future<DocumentSnapshot<Map<String, dynamic>>>> compFutures = compUserIds.map((friendId) {
-                        return collectionRef.doc(friendId).get() as Future<DocumentSnapshot<Map<String, dynamic>>>;
+                        return collectionRef.doc(friendId).get();
                     }).toList();
 
                     return FutureBuilder<List<DocumentSnapshot<Map<String, dynamic>>>>(
@@ -82,6 +85,8 @@ class _CompetingScreenState extends State<CompetingScreen> {
 
                         // }
                         // list view
+                        CompetitorsCard win = CompetitorsCard(competitors: [], winner: '', competitorStats: {},);
+                        final winner  = win._getWinner();
                         return ListView.builder(
                           shrinkWrap: true,
                           itemCount: compsData.length,
@@ -97,30 +102,11 @@ class _CompetingScreenState extends State<CompetingScreen> {
                                   'steps': (friendDocument['steps'] ?? 0).toInt(),
                                 },
                               },
-                              winner: "",
+                              winner: winner ?? 'Null',
+                              // winner: 'winner',
                             );
-                            
-
-                            // return ListTile(
-                            //   title: Text(friendsList),
-                            //   trailing: Icon(Icons.emoji_events),
-                            //   onTap: () {
-                            //     // Navigator.push(
-                            //     //   context,
-                            //     //   MaterialPageRoute(builder: (context) => CompetingScreen()),
-                            //     // );
-                            //   },
-                            // );
                           },
                         );
-
-
-
-
-
-                    // Stream<QuerySnapshot<Map<String, dynamic>>> collectionRef2 = FirebaseFirestore.instance.collection('users').where('users', whereIn: compUserIds).snapshots();
-
-                    return Container(); // Placeholder return statement
                   },
                     );
                   },
@@ -186,7 +172,11 @@ fetchFriendData (String friendId) async {
 class CompetitorsCard extends StatelessWidget {
   final List<String> competitors;
   final Map<String, Map<String, int>> competitorStats;
-  final String winner;
+  late final String winner;
+  //userId
+  final String userId = FirebaseAuth.instance.currentUser!.uid.toString();
+  //user
+  final String user = FirebaseAuth.instance.currentUser!.displayName.toString();
 
   CompetitorsCard({
     required this.competitors,
@@ -194,53 +184,161 @@ class CompetitorsCard extends StatelessWidget {
     required this.winner,
   });
 
+
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Column(
-        children: [
-          const Text(
-            'Competitors',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 10),
-          ListView.builder(
-            shrinkWrap: true,
-            itemCount: competitors.length,
-            itemBuilder: (context, index) {
-              final competitor = competitors[index];
-              final stats = competitorStats[competitor];
-              final distance = stats?['distance'];
-              final calories = stats?['calories'];
-              final steps = stats?['steps'];
-              return ListTile(
-                title: Text(competitor),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Distance: $distance'),
-                    Text('Calories: $calories'),
-                    Text('Steps: $steps'),
-                  ],
-                ),
-              );
-            },
-          ),
-          const SizedBox(height: 10),
-          Text(
-            'Winner: $winner',
+return Card(
+  elevation: 4,
+  shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(10),
+
+  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const SizedBox(height: 16),
+      for (final competitor in competitors)
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Text(
+            'Competitor: $competitor',
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
           ),
-        ],
+        ),
+      const Divider(
+        color: Color.fromARGB(255, 0, 0, 0),
+        thickness: 1,
       ),
-    );
+      ListView.builder(
+        shrinkWrap: true,
+        itemCount: competitors.length,
+        itemBuilder: (context, index) {
+          winner ??= _getWinner();
+          final competitor = competitors[index];
+          final stats = competitorStats[competitor];
+          final distance = stats?['distance'];
+          final calories = stats?['calories'];
+          final steps = stats?['steps'];
+          return ListTile(
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 4),
+                Text('Distance: $distance',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: winner == competitor ? Colors.green : Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text('Calories: $calories',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: winner == competitor ? Colors.green : Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text('Steps: $steps',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: winner == competitor ? Colors.green : Colors.black,
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+      const SizedBox(height: 10),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Text(
+          // ignore: unnecessary_null_comparison, prefer_if_null_operators
+          'Winner: ${winner != null ? winner : 'No winner'}',
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+      const SizedBox(height: 16),
+    ],
+  ),
+);
   }
+//function to get commpetitor stats
+  Map<String, Map<String, int>> _getCompetitorStats() {
+    final competitorStats = <String, Map<String, int>>{};
+    for (final competitor in competitors) {
+      competitorStats[competitor] = {
+        'distance': 0,
+        'calories': 0,
+        'steps': 0,
+      };
+    }
+    return competitorStats;
+  }
+//function to get winner between current user and friend
+  String _getWinnerBetween(String winner, String competitor) {
+    final competitorStats = _getCompetitorStats();
+    final currentDistance = competitorStats[user]?['distance'];
+    final currentCalories = competitorStats[user]?['calories'];
+    final currentSteps = competitorStats[user]?['steps'];
+    final competitorDistance = competitorStats[competitor]?['distance'];
+    final competitorCalories = competitorStats[competitor]?['calories'];
+    final competitorSteps = competitorStats[competitor]?['steps'];
+    int currentScore = 0;
+    int competitorScore = 0;
+    if (currentDistance! > competitorDistance!) {
+      currentScore++;
+    } else if (currentDistance < competitorDistance) {
+      competitorScore++;
+    }
+    if (currentCalories! > competitorCalories!) {
+      currentScore++;
+    } else if (currentCalories < competitorCalories) {
+      competitorScore++;
+    }
+    if (currentSteps! > competitorSteps!) {
+      currentScore++;
+    } else if (currentSteps < competitorSteps) {
+      competitorScore++;
+    }
+    if (currentScore > competitorScore) {
+      return user;
+    } else if (currentScore < competitorScore) {
+      return competitor;
+    } else {
+      return 'Tie';
+    }
+  }
+//functions that will decide the winner, if competing friend has 2 out of 3 goals higher than current user then they win and winner is stored in firebase 
+  String _getWinner() {
+    final competitorStats = _getCompetitorStats();
+    String winner = '';
+    for (final competitor in competitors) {
+      winner = _getWinnerBetween(winner, competitor);
+    }
+    if (winner != 'Tie') {
+      FirebaseFirestore.instance.collection('users').doc(userId).update({
+        'winner': winner,
+      });
+    }
+    return winner;
+  }
+
+
+
+
+
+
+
 }
 
 

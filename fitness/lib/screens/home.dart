@@ -1,14 +1,12 @@
 //from login page to this page 
+// ignore_for_file: unused_local_variable
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fitness/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 // ignore: unused_import
 import 'package:fitness/helpers/firebase_auth.dart';
 import 'package:health/health.dart';
-import 'package:flutter/material.dart';
-import 'package:health/health.dart';
-//icons
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 //firestone
 import 'package:cloud_firestore/cloud_firestore.dart';
 //friends page
@@ -17,8 +15,6 @@ import 'package:fitness/screens/competing.dart';
 import 'package:fitness/screens/settings.dart';
 import 'package:fitness/helpers/goalCard.dart';
 //import footstep icon
-import 'package:flutter/widgets.dart';
-
 Image kcalImage = Image.asset('assets/images/kcal.png');
 Image footstepsImage = Image.asset('assets/images/footsteps.png');
 Image distanceImage = Image.asset('assets/images/running.png');
@@ -35,12 +31,13 @@ class HealthDataScreen extends StatefulWidget {
 class _HealthDataScreenState extends State<HealthDataScreen> {
   final _formKey = GlobalKey<FormState>();
   FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  String? heartRate;
+  String? heartRate = "82";
   String? bp;
   String? steppage; //for homecard
-  double? steps = 52; 
+  double? steps = 52; //for goalcard and firestore
   double? activeEnergy = 10;
   double? running = 20;
+  double? movingMins = 30;
   String? calories;
 
   String? formSteps;
@@ -48,7 +45,7 @@ class _HealthDataScreenState extends State<HealthDataScreen> {
   String? formDistance;
 
   String? bloodPreSys;
-  String? moveMins;
+  String? moveMins = "33";
   String? bloodPreDia;
   String? workout;
   String? distance;
@@ -112,6 +109,7 @@ _onTap() {
         // fetch health data
         healthData = await health.getHealthDataFromTypes(yesterday, now, types);//get health data from yesterday to now
         //fetch data and store in firebase firestore
+        steps = health.getTotalStepsInInterval(yesterday, now) as double?;
 
 
         if (healthData.isNotEmpty) {
@@ -122,7 +120,6 @@ _onTap() {
             } else if (h.type == HealthDataType.BLOOD_PRESSURE_DIASTOLIC) {
               bloodPreDia = "${h.value}";
             } else if (h.type == HealthDataType.STEPS) {
-              steps = "${h.value}" as double?;
               steppage = "${h.value}";
             } else if (h.type == HealthDataType.ACTIVE_ENERGY_BURNED) {
               calories = "${h.value}";
@@ -139,7 +136,6 @@ _onTap() {
               running = "${h.value}" as double?;
             }
 
-
           if (bloodPreSys != "null" && bloodPreDia != "null") {
             bp = "$bloodPreSys / $bloodPreDia mmHg";
           }
@@ -149,9 +145,11 @@ _onTap() {
             'blood pressure': bp,
             'steps': steps,
             'calories': activeEnergy,
+            'healthCal': calories,
             'workout': workout,
             'move minutes': moveMins,
             'distance': distance,
+
                 });
           }
 
@@ -289,7 +287,7 @@ _onTap() {
                               },
                             ),
                             TextFormField(
-                              decoration: const InputDecoration(labelText: 'Distance in miles'),
+                              decoration: const InputDecoration(labelText: 'Distance in meters'),
                               keyboardType: TextInputType.number,
                               validator: (formDistance) {
                                 if (formDistance == null || formDistance.isEmpty) {
@@ -362,9 +360,9 @@ child: Column(
             goal: userDocument['step goals'] ?? "0.0",
               iconPath: "assets/images/footsteps.png",
               heading: "Steps",
-              value: steps ?? 0,
+              value: steps ?? 0.0,
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 5),
             HomeCard(
               title: "Calories",
               goal: userDocument['calorie goals'] ?? "0.0",
@@ -372,13 +370,15 @@ child: Column(
               heading: "Calories",
               value: activeEnergy ?? 0,
             ),
+            const SizedBox(height: 5),
             HomeCard(
               title: "Distance",
-              goal: userDocument['distance goals'] ?? "0",
+              goal: userDocument['distance goals'] ?? "0.0",
               iconPath: "assets/images/running.jpeg",
               heading: "Distance",
               value: running ?? 0,
             ),
+
           ],
         );
       },
@@ -395,16 +395,16 @@ child: Column(
                     child: healthCard(
                         title: "Heart rate",
                         image: "assets/images/health.jpeg",
-                        data: heartRate ?? "72 bpm",
+                        data: "${heartRate ?? 'Null'} bpm",
                         color: const Color(0xFFffffff))), //white color code: 0xFFffffff
                 const SizedBox(
                   width: 10,
                 ),
                 Expanded(
                     child: healthCard(
-                        title: "Blood pressure",
-                        data: bp ?? "119/70 mm Hg", //what does line do?
-                        image: "assets/images/blood-pressure.jpeg",
+                        title: "Exercise Time",
+                        data: "${moveMins ?? 'Null'} mins",
+                        image: "assets/images/time.jpeg",
                         color: const Color(0xFFffffff))),
               ],
             ),
@@ -414,7 +414,7 @@ child: Column(
                     child: healthCard(
                         title: "Step count",
                         image: "assets/images/step.jpeg",
-                        data: "$steps Steps", //data of steps that user has taken and ?? means if null then show null
+                        data: "${steps ?? '0'} steps",
                         color: const Color(0xFFffffff))),
                 const SizedBox(
                   width: 10,
@@ -423,7 +423,7 @@ child: Column(
                     child: healthCard(
                         title: "Calories burned",
                         image: "assets/images/kcal.jpeg",
-                        data: "$activeEnergy kcal",
+                        data: "${activeEnergy ?? '0'} kcal",
                         color: const Color(0xFFffffff))
                         ),
               ],
@@ -627,6 +627,7 @@ void _searchForUser(BuildContext context, String name) async {
           actions: [
             ElevatedButton(
               onPressed: () {
+                // ignore: unused_label
                 content: Text('User $name was added to your friends list');
                 Navigator.pop(context); // Close the dialog)
                 //print that user was added to friends list 
@@ -703,7 +704,12 @@ querySnapshot.docs.forEach((doc) {
     title: Text('Friends List'),
   ),
         body: Container(
-          height: 200,
+          height: 300,
+        //styling
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(5),
+          color: Color.fromARGB(255, 255, 255, 255),
+        ),
           child:
         Card(
         child:
@@ -739,11 +745,15 @@ querySnapshot.docs.forEach((doc) {
                   } else if (value == 'remove') {
                     // Handle the "Remove" action
                     //remove friends from friends list
-                    _removeFriend(friendName);
+                    _removeFriend(friendId);
+                    setState(() {
+                      //call home page to refresh
+                      Container();
+                    });
                   } else if (value == 'remove') {
                     // Handle the "Remove" action
                     //remove friends from friends list
-                    _removeFriend1(friendName);
+                    _removeFriend1(friendId);
                   }
                 },
               ),
@@ -751,6 +761,7 @@ querySnapshot.docs.forEach((doc) {
           },
         ),
         ),
+        
         ),
     );
 },
