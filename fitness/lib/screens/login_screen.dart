@@ -3,7 +3,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:fitness/screens/name.dart';
+// import 'package:fitness/screens/name.dart';
 import 'package:fitness/screens/signup_screen.dart';
 import 'package:fitness/screens/home.dart';
 
@@ -68,6 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
         appBar: AppBar(
           backgroundColor: Colors.lightBlueAccent,
           title: Text('Fitness App'),
+          automaticallyImplyLeading: false, // Disable automatic back arrow
           centerTitle: true,
         ),
         body: FutureBuilder(
@@ -85,15 +86,17 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Image.asset("assets/images/bolt.png", fit: BoxFit.contain),
                       //background color: Colors.lightBlueAccent,
                     ),
-                    const Padding(
+                    Center(
+                    child: Padding(
                       padding: EdgeInsets.only(bottom: 30.0,top: 12),
                       child: Text(
-                        'Welcome People',
+                        '     Welcome to    MyFitnessBuddy',
                         style: TextStyle(
                           color: Colors.black,
                           fontSize: 40
                         )
                       ),
+                    ),
                     ),
                     Form(
                       key: _formKey,
@@ -102,11 +105,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           TextFormField(
                             controller: _emailTextController,
                             focusNode: _focusEmail,
-                            validator: (value) => Validator.validateEmail(
-                              email: value,
-                            ),
+                            // validator: (value) => Validator.validateEmail(
+                              // email: value,
+                            // ),
                             decoration: InputDecoration(
-                              hintText: "Email",
+                              hintText: "Name",
                               errorBorder: UnderlineInputBorder(
                                 borderRadius: BorderRadius.circular(6.0),
                                 borderSide: BorderSide(
@@ -151,8 +154,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                       setState(() {
                                         _isProcessing = true;
                                       });
-
-                                      User? user = await FirebaseAuthHelper
+                                      _emailTextController.text = _emailTextController.text + '@gmail.com';
+                                      User? user = await FirebaseAuthHelper //check if user is already logged in
                                           // .signInUsingPhoneNumber(phoneNumber: _phoneTextController.text, 
                                           // phoneAuthCredentialSent: (PhoneAuthCredential credential) {
                                           //   _phoneAuthCredentialSent.text = credential.toString();
