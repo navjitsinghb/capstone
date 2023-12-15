@@ -67,7 +67,7 @@ class _LoginScreenState extends State<LoginScreen> {
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: Colors.lightBlueAccent,
-          title: Text('Fitness App'),
+          title: Text('Fitness Buddy'),
           automaticallyImplyLeading: false, // Disable automatic back arrow
           centerTitle: true,
         ),

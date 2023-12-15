@@ -200,6 +200,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           //null
           'friends': [],
           'competing': [],
+          'time': 0,
         })
         .then((value) => print("User Added"))
         .catchError((error) => print("Failed to add user: $error"));

@@ -70,7 +70,31 @@ class _CompetingScreenState extends State<CompetingScreen> {
                     List<Future<DocumentSnapshot<Map<String, dynamic>>>> compFutures = compUserIds.map((friendId) {
                         return collectionRef.doc(friendId).get();
                     }).toList();
-
+                    //get current user time field from firestore
+                    DateTime time =  userDocument['time'].toDate();
+                    DateTime now = DateTime.now();
+                    //if time has been over a day from tehe current time then call for the winner
+                    if (now.difference(time).inDays >= 1) {
+                      //call for winner
+                      //get winner from firestore
+                      String winner = userDocument['winner'];
+                      //if winner is current user then add 1 to wins field in firestore
+                      if (winner == user) {
+                        FirebaseFirestore.instance.collection('users').doc(userId).update({
+                          'wins': FieldValue.increment(1),
+                        });
+                      }
+                      //if winner is not current user then add 1 to losses field in firestore
+                      else {
+                        FirebaseFirestore.instance.collection('users').doc(userId).update({
+                          'losses': FieldValue.increment(1),
+                        });
+                      }
+                      //reset time field in firestore
+                      FirebaseFirestore.instance.collection('users').doc(userId).update({
+                        'time': DateTime.now(),
+                      });
+                    }
                     return FutureBuilder<List<DocumentSnapshot<Map<String, dynamic>>>>(
                       future: Future.wait(compFutures),
                       builder: (context, AsyncSnapshot<List<DocumentSnapshot<Map<String, dynamic>>>> snapshot) {
@@ -106,6 +130,7 @@ class _CompetingScreenState extends State<CompetingScreen> {
                                   'steps': steps.toInt(),
                                 },
                               },
+                              //ignore: unnecessary_null_comparison, prefer_if_null_operators
                               winner: winner ?? 'Null',
                               // winner: 'winner',
                             );

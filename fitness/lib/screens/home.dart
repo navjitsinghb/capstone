@@ -776,26 +776,30 @@ querySnapshot.docs.forEach((doc) {
                     child: Text('Remove $friendName from friends list'),
                   ),
                   PopupMenuItem<String>(
-                    value: 'remove',
+                    value: 'remove1',
                     child: Text('Remove $friendName from competing'),
                   )
                 ],
                 onSelected: (String value) {
                   if (value == 'compete') {
                     // Handle the "Compete" action
+                    //get current time 
+                    DateTime now = DateTime.now();
                     //add id of friend to competing array in firestone in current user and go to competing page
                     _firestore.collection('users').doc(uid).update({
                       'competing': FieldValue.arrayUnion([friendId]),
+                      'time': now,
                     });
                   } else if (value == 'remove') {
                     // Handle the "Remove" action
                     //remove friends from friends list
                     _removeFriend(friendId);
+                    _removeFriend1(friendId);
                     setState(() {
                       //call home page to refresh
                       Container();
                     });
-                  } else if (value == 'remove') {
+                  } else if (value == 'remove1') {
                     // Handle the "Remove" action
                     //remove friends from friends list
                     _removeFriend1(friendId);

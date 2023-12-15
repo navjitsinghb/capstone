@@ -330,6 +330,8 @@ Widget goalCard3(String name, String goal, String iconPath, String heading, doub
                                 List<Widget> goalscards = friendDocuments.map((friendDocument) {
                                 double steps = double.tryParse(friendDocument['steps'].toString()) ?? 0.0;
                                 double calories = double.tryParse(friendDocument['calories'].toString()) ?? 0.0;
+                                double distance = double.tryParse(friendDocument['distance'].toString()) ?? 0.0;
+
                                   return Column(
                                     children: 
                                     [
@@ -346,14 +348,22 @@ Widget goalCard3(String name, String goal, String iconPath, String heading, doub
                                             'assets/images/kcal.png',
                                             'Calories',
                                             calories,
-                                          ),                                    
+                                          ), 
+                                          //goalcard2 for distance widget
+                                          goalCard2(
+                                            friendDocument['distance goals'],
+                                            'assets/images/running.jpeg',
+                                            'Distance',
+                                            distance,
+                                          ),
+                                          //                                   
                                         ],
                                   );
                                 }).toList();
                                 //goalcard2 for future widget
                                 List<Widget> friendWidget = goalscards.map((goalcard) {
                                   return SizedBox(
-                                    height: 200, //MediaQuery.of(context).size.height,
+                                    height: 300, //MediaQuery.of(context).size.height,
                                     width: MediaQuery.of(context).size.width,
                                     child: 
                                         Card(
